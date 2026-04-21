@@ -1,5 +1,5 @@
-python app.py
+Skrypt odpalasz komenda `python app.py`
 
-http://localhost:5000
+Otwierasz tą strone `http://localhost:5000`
 
-Zeby zatrzymać skrypt kliknij `Ctrl C` w terminalu
+Żeby zatrzymać skrypt kliknij `Ctrl C` w terminalu
