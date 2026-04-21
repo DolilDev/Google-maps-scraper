@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LeadManager — przeglądarka leadów</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;500;600;700;800&display=swap"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0d0d12;
+  --surface:#13131a;
+  --surface2:#1c1c27;
+  --surface3:#22222f;
+  --border:#2a2a3d;
+  --border2:#353550;
+  --accent:#6ee7b7;
+  --accent2:#34d399;
+  --orange:#fb923c;
+  --blue:#60a5fa;
+  --red:#f87171;
+  --purple:#a78bfa;
+  --yellow:#fbbf24;
+  --text:#e2e2f0;
+  --text2:#9898b8;
+  --text3:#5a5a7a;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Outfit',sans-serif;
+}
+
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hidden;}
+body{display:flex;flex-direction:column;}
+
+/* ── HEADER ── */
+header{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:0 1.5rem;height:52px;
+  display:flex;align-items:center;gap:1.25rem;
+  flex-shrink:0;
+}
+.logo{font-size:1.1rem;font-weight:800;letter-spacing:-0.02em;}
+.logo span{color:var(--accent);}
+.hdiv{width:1px;height:18px;background:var(--border2);}
+.hsub{font-size:0.7rem;color:var(--text3);font-family:var(--mono);}
+.hright{margin-left:auto;display:flex;align-items:center;gap:0.6rem;}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:0.35rem;font-family:var(--sans);font-weight:600;font-size:0.8rem;border-radius:6px;padding:0.4rem 0.9rem;cursor:pointer;border:1px solid transparent;transition:all 0.15s;white-space:nowrap;}
+.btn-green{background:var(--accent2);color:#021a0e;border-color:var(--accent2);}
+.btn-green:hover{background:var(--accent);}
+.btn-green:disabled{background:var(--surface3);color:var(--text3);border-color:var(--border);cursor:not-allowed;}
+.btn-red{background:transparent;color:var(--red);border-color:#4d1a1a;}
+.btn-red:hover{background:#200a0a;}
+.btn-red:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-blue{background:transparent;color:var(--blue);border-color:#1a334d;}
+.btn-blue:hover{background:#0a1620;}
+.btn-blue:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-orange{background:transparent;color:var(--orange);border-color:#4d2a1a;}
+.btn-orange:hover{background:#200d0a;}
+.btn-orange:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-ghost{background:transparent;color:var(--text3);border-color:var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+
+/* ── MAIN ── */
+.main{flex:1;display:grid;grid-template-columns:260px 1fr;overflow:hidden;}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+
+.sidebar-section{padding:1.1rem;border-bottom:1px solid var(--border);}
+.slabel{font-size:0.58rem;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--text3);margin-bottom:0.6rem;font-family:var(--mono);}
+
+/* Upload zone */
+.upload-zone{
+  border:1.5px dashed var(--border2);
+  border-radius:10px;
+  padding:1.5rem 1rem;
+  text-align:center;
+  cursor:pointer;
+  transition:all 0.2s;
+  position:relative;
+}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent2);background:rgba(52,211,153,0.04);}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-icon{font-size:1.8rem;margin-bottom:0.5rem;opacity:0.5;}
+.upload-text{font-size:0.75rem;color:var(--text3);line-height:1.5;}
+.upload-text strong{color:var(--text2);display:block;font-size:0.8rem;}
+
+.file-loaded{
+  background:rgba(52,211,153,0.06);
+  border:1px solid rgba(52,211,153,0.2);
+  border-radius:8px;
+  padding:0.7rem 0.9rem;
+  display:none;
+}
+.file-name{font-size:0.78rem;font-weight:600;color:var(--accent);font-family:var(--mono);word-break:break-all;}
+.file-meta{font-size:0.68rem;color:var(--text3);margin-top:0.2rem;}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.35rem;}
+.stat{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:0.55rem 0.7rem;}
+.stat-val{font-family:var(--mono);font-size:1.1rem;font-weight:500;color:var(--text);line-height:1;}
+.stat-val.g{color:var(--accent);}
+.stat-val.o{color:var(--orange);}
+.stat-val.p{color:var(--purple);}
+.stat-val.r{color:var(--red);}
+.stat-lbl{font-size:0.6rem;color:var(--text3);margin-top:0.2rem;}
+
+/* Search */
+.search-wrap{position:relative;}
+.search-input{
+  width:100%;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:7px;
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:0.78rem;
+  padding:0.55rem 0.75rem 0.55rem 2rem;
+  outline:none;
+  transition:border-color 0.15s;
+}
+.search-input:focus{border-color:var(--accent2);}
+.search-input::placeholder{color:var(--text3);}
+.search-icon{position:absolute;left:0.65rem;top:50%;transform:translateY(-50%);color:var(--text3);font-size:0.75rem;pointer-events:none;}
+
+/* Filter select */
+select.filter-select{
+  width:100%;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:7px;
+  color:var(--text2);
+  font-family:var(--mono);
+  font-size:0.75rem;
+  padding:0.5rem 0.7rem;
+  outline:none;
+  cursor:pointer;
+  margin-top:0.4rem;
+}
+select.filter-select:focus{border-color:var(--accent2);}
+
+/* Actions */
+.actions{display:flex;flex-direction:column;gap:0.4rem;}
+
+/* ── TABLE AREA ── */
+.content{display:flex;flex-direction:column;overflow:hidden;}
+
+/* toolbar */
+.toolbar{
+  height:44px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  padding:0 1rem;gap:0.6rem;
+  flex-shrink:0;
+}
+
+.sel-info{font-size:0.72rem;color:var(--text3);font-family:var(--mono);margin-right:0.25rem;}
+.sel-info strong{color:var(--accent);}
+
+/* table */
+.table-wrap{flex:1;overflow:auto;}
+.table-wrap::-webkit-scrollbar{width:4px;height:4px;}
+.table-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+table{width:100%;border-collapse:collapse;font-size:0.78rem;}
+thead{position:sticky;top:0;z-index:2;}
+
+thead tr{background:var(--surface);}
+th{
+  padding:0.5rem 0.75rem;
+  text-align:left;
+  font-size:0.6rem;font-weight:600;
+  letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--text3);font-family:var(--mono);
+  border-bottom:1px solid var(--border2);
+  white-space:nowrap;user-select:none;cursor:pointer;
+}
+th:hover{color:var(--text2);}
+th.sort-asc::after{content:' ↑';}
+th.sort-desc::after{content:' ↓';}
+
+td{
+  padding:0.5rem 0.75rem;
+  border-bottom:1px solid var(--border);
+  color:var(--text2);
+  max-width:200px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  vertical-align:middle;
+}
+
+tr.checked td{background:rgba(52,211,153,0.05);}
+tr.checked td.nm{color:var(--accent);}
+tr:hover td{background:var(--surface2);}
+tr.deleted{display:none;}
+
+td.nm{color:var(--text);font-weight:600;}
+td.num{color:var(--text3);font-family:var(--mono);font-size:0.68rem;}
+
+.tag{
+  display:inline-block;background:var(--surface3);color:var(--orange);
+  font-size:0.63rem;font-weight:600;padding:0.08rem 0.4rem;
+  border-radius:3px;border:1px solid #3d2a1a;
+  white-space:nowrap;font-family:var(--mono);
+}
+
+.maps-a{color:var(--blue);text-decoration:none;font-size:0.7rem;font-family:var(--mono);}
+.maps-a:hover{text-decoration:underline;}
+
+.rat{color:var(--text3);font-size:0.7rem;font-family:var(--mono);}
+.rat b{color:var(--yellow);}
+
+/* Checkbox */
+.cb-wrap{display:flex;align-items:center;justify-content:center;}
+.cb{
+  width:16px;height:16px;
+  border:1.5px solid var(--border2);
+  border-radius:4px;
+  background:var(--surface2);
+  cursor:pointer;
+  appearance:none;-webkit-appearance:none;
+  transition:all 0.1s;
+  position:relative;flex-shrink:0;
+}
+.cb:checked{background:var(--accent2);border-color:var(--accent2);}
+.cb:checked::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:0.65rem;color:#021a0e;font-weight:700;}
+.cb:hover{border-color:var(--accent2);}
+
+/* Status badge */
+.status-badge{
+  display:inline-flex;align-items:center;gap:0.3rem;
+  font-size:0.65rem;font-weight:600;font-family:var(--mono);
+  padding:0.12rem 0.45rem;border-radius:3px;
+}
+.status-new{background:rgba(96,165,250,0.12);color:var(--blue);border:1px solid rgba(96,165,250,0.2);}
+.status-checked{background:rgba(52,211,153,0.12);color:var(--accent2);border:1px solid rgba(52,211,153,0.2);}
+
+/* Empty / loading */
+.empty-state{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:0.75rem;
+  color:var(--text3);font-size:0.85rem;text-align:center;
+  padding:3rem;
+}
+.empty-state .ico{font-size:3rem;opacity:0.25;}
+.empty-state p{line-height:1.6;max-width:280px;}
+
+/* Delete confirm */
+.del-confirm{
+  position:fixed;inset:0;background:rgba(0,0,0,0.6);
+  display:none;align-items:center;justify-content:center;z-index:100;
+  backdrop-filter:blur(4px);
+}
+.del-confirm.show{display:flex;}
+.del-box{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:12px;padding:1.5rem;max-width:360px;width:90%;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+.del-title{font-weight:700;font-size:1rem;margin-bottom:0.5rem;}
+.del-sub{font-size:0.8rem;color:var(--text3);line-height:1.6;margin-bottom:1.25rem;}
+.del-actions{display:flex;gap:0.5rem;justify-content:flex-end;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Lead<span>Manager</span></div>
+  <div class="hdiv"></div>
+  <div class="hsub">przeglądarka i edytor leadów</div>
+  <div class="hright">
+    <button class="btn btn-orange" id="btn-export-checked" onclick="exportChecked()" disabled>↓ Eksport zaznaczonych</button>
+    <button class="btn btn-green" id="btn-export-all" onclick="exportAll()" disabled>↓ Eksport wszystkich</button>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="sidebar-section">
+      <div class="slabel">Wgraj plik CSV</div>
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" accept=".csv" id="file-input" onchange="loadFile(this.files[0])"/>
+        <div class="upload-icon">📂</div>
+        <div class="upload-text">
+          <strong>Kliknij lub przeciągnij plik</strong>
+          Pliki CSV z LeadScrapera (separator: ;)
+        </div>
+      </div>
+      <div class="file-loaded" id="file-loaded">
+        <div class="file-name" id="file-name"></div>
+        <div class="file-meta" id="file-meta"></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="slabel">Statystyki</div>
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-val" id="st-total">0</div><div class="stat-lbl">Łącznie</div></div>
+        <div class="stat"><div class="stat-val" id="st-visible">0</div><div class="stat-lbl">Widocznych</div></div>
+        <div class="stat"><div class="stat-val g" id="st-checked">0</div><div class="stat-lbl">Zaznaczonych</div></div>
+        <div class="stat"><div class="stat-val r" id="st-deleted">0</div><div class="stat-lbl">Usuniętych</div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="slabel">Szukaj i filtruj</div>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" type="text" placeholder="Szukaj nazwy, adresu..." id="search-input" oninput="applyFilters()"/>
+      </div>
+      <select class="filter-select" id="filter-branza" onchange="applyFilters()">
+        <option value="">Wszystkie branże</option>
+      </select>
+      <select class="filter-select" id="filter-status" onchange="applyFilters()">
+        <option value="">Wszystkie statusy</option>
+        <option value="new">Nowe</option>
+        <option value="checked">Zaznaczone</option>
+      </select>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="slabel">Akcje</div>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="selectAll()">☑ Zaznacz wszystkie widoczne</button>
+        <button class="btn btn-ghost" onclick="deselectAll()">☐ Odznacz wszystkie</button>
+        <button class="btn btn-red" id="btn-del-sel" onclick="confirmDelete('selected')" disabled>🗑 Usuń zaznaczone</button>
+        <button class="btn btn-red" id="btn-del-unchecked" onclick="confirmDelete('unchecked')" disabled>🗑 Usuń niezaznaczone</button>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <div class="toolbar">
+      <input type="checkbox" class="cb" id="cb-all" onchange="toggleAll(this)" title="Zaznacz/odznacz wszystkie"/>
+      <span class="sel-info" id="sel-info">Brak załadowanego pliku</span>
+      <div style="margin-left:auto;display:flex;gap:0.5rem;" id="toolbar-btns">
+      </div>
+    </div>
+
+    <div class="table-wrap" id="table-wrap">
+      <div class="empty-state" id="empty-state">
+        <div class="ico">📋</div>
+        <p>Wgraj plik CSV wygenerowany przez LeadScrapera żeby zobaczyć leady</p>
+      </div>
+      <table id="main-table" style="display:none;">
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div class="del-confirm" id="del-confirm">
+  <div class="del-box">
+    <div class="del-title" id="del-title">Potwierdź usunięcie</div>
+    <div class="del-sub" id="del-sub"></div>
+    <div class="del-actions">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Anuluj</button>
+      <button class="btn btn-red" onclick="executeDelete()">Usuń</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let allRows = [];        // Wszystkie wiersze z CSV
+let columns = [];        // Nagłówki CSV
+let deletedIds = new Set();
+let checkedIds = new Set();
+let pendingDelete = null;
+let sortCol = null, sortDir = 1;
+
+// ─── File loading ─────────────────────────────────────────────────────────────
+const zone = document.getElementById('upload-zone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('drag');
+  if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+
+function loadFile(file) {
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    parseCSV(e.target.result, file.name);
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+function parseCSV(text, filename) {
+  // Usuń BOM jeśli jest
+  text = text.replace(/^\uFEFF/, '');
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if(lines.length < 2) { alert('Plik jest pusty lub nieprawidłowy'); return; }
+
+  // Wykryj separator (; lub ,)
+  const sep = lines[0].includes(';') ? ';' : ',';
+
+  columns = parseLine(lines[0], sep);
+
+  allRows = [];
+  deletedIds.clear();
+  checkedIds.clear();
+
+  for(let i = 1; i < lines.length; i++) {
+    if(!lines[i].trim()) continue;
+    const vals = parseLine(lines[i], sep);
+    const row = { _id: i };
+    columns.forEach((col, ci) => { row[col] = vals[ci] || ''; });
+    allRows.push(row);
+  }
+
+  // Plik info
+  document.getElementById('upload-zone').style.display = 'none';
+  const fl = document.getElementById('file-loaded');
+  fl.style.display = 'block';
+  document.getElementById('file-name').textContent = filename;
+  document.getElementById('file-meta').textContent = `${allRows.length} wierszy · separator: "${sep}"`;
+
+  buildTable();
+  buildBranzaFilter();
+  renderTable();
+  updateStats();
+  document.getElementById('btn-export-all').disabled = false;
+}
+
+function parseLine(line, sep) {
+  // Prosty parser obsługujący cudzysłowy
+  const res = [];
+  let cur = '', inQ = false;
+  for(let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if(c === '"') { inQ = !inQ; }
+    else if(c === sep && !inQ) { res.push(cur.trim()); cur = ''; }
+    else { cur += c; }
+  }
+  res.push(cur.trim());
+  return res;
+}
+
+// ─── Table building ───────────────────────────────────────────────────────────
+const DISPLAY_COLS = ['nazwa','branza','adres','telefon','ocena','liczba_opinii','godziny','url_gmaps'];
+const COL_LABELS = {
+  nazwa:'Nazwa firmy', branza:'Branża', adres:'Adres', telefon:'Telefon',
+  ocena:'Ocena', liczba_opinii:'Opinii', godziny:'Godziny', url_gmaps:'Link'
+};
+
+function buildTable() {
+  const thead = document.getElementById('thead');
+  const visibleCols = columns.filter(c => DISPLAY_COLS.includes(c));
+
+  thead.innerHTML = `<tr>
+    <th style="width:36px;"><input type="checkbox" class="cb" id="cb-all2" onchange="toggleAll(this)"/></th>
+    <th style="width:32px;" class="num">#</th>
+    <th style="width:80px;">Status</th>
+    ${visibleCols.map(c => `<th onclick="sortBy('${c}')" id="th-${c}">${COL_LABELS[c]||c}</th>`).join('')}
+    <th style="width:60px;">Akcja</th>
+  </tr>`;
+}
+
+function buildBranzaFilter() {
+  const branze = [...new Set(allRows.map(r => r.branza).filter(Boolean))].sort();
+  const sel = document.getElementById('filter-branza');
+  sel.innerHTML = '<option value="">Wszystkie branże</option>';
+  branze.forEach(b => {
+    const o = document.createElement('option');
+    o.value = b; o.textContent = b;
+    sel.appendChild(o);
+  });
+}
+
+function getVisibleRows() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const branza = document.getElementById('filter-branza').value;
+  const status = document.getElementById('filter-status').value;
+
+  return allRows.filter(r => {
+    if(deletedIds.has(r._id)) return false;
+    if(branza && r.branza !== branza) return false;
+    if(status === 'checked' && !checkedIds.has(r._id)) return false;
+    if(status === 'new' && checkedIds.has(r._id)) return false;
+    if(q) {
+      const haystack = Object.values(r).join(' ').toLowerCase();
+      if(!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+
+  let rows = getVisibleRows();
+
+  // Sort
+  if(sortCol) {
+    rows.sort((a,b) => {
+      const av = (a[sortCol]||'').toLowerCase();
+      const bv = (b[sortCol]||'').toLowerCase();
+      return av < bv ? -sortDir : av > bv ? sortDir : 0;
+    });
+  }
+
+  document.getElementById('main-table').style.display = rows.length ? 'table' : 'none';
+  document.getElementById('empty-state').style.display = rows.length ? 'none' : 'flex';
+
+  const visibleCols = columns.filter(c => DISPLAY_COLS.includes(c));
+
+  rows.forEach((row, i) => {
+    const isChecked = checkedIds.has(row._id);
+    const tr = document.createElement('tr');
+    if(isChecked) tr.classList.add('checked');
+    tr.dataset.id = row._id;
+
+    const statusBadge = isChecked
+      ? `<span class="status-badge status-checked">✓ zaznaczone</span>`
+      : `<span class="status-badge status-new">nowy</span>`;
+
+    const cells = visibleCols.map(col => {
+      let val = row[col] || '';
+      if(col === 'url_gmaps' && val) {
+        return `<td><a class="maps-a" href="${esc(val)}" target="_blank">↗ otwórz</a></td>`;
+      }
+      if(col === 'branza' && val) {
+        return `<td><span class="tag">${esc(val)}</span></td>`;
+      }
+      if(col === 'ocena' && val) {
+        const op = row['liczba_opinii'] ? ` · ${row['liczba_opinii']}` : '';
+        if(col === 'ocena') return `<td><span class="rat"><b>${esc(val)}</b>${op}</span></td>`;
+      }
+      if(col === 'liczba_opinii') return ''; // obsłużone w ocena
+      if(col === 'nazwa') return `<td class="nm" title="${esc(val)}">${esc(val)}</td>`;
+      return `<td title="${esc(val)}">${esc(val)}</td>`;
+    }).filter(Boolean).join('');
+
+    tr.innerHTML = `
+      <td class="cb-wrap"><input type="checkbox" class="cb" ${isChecked?'checked':''} onchange="toggleRow(${row._id},this)"/></td>
+      <td class="num">${i+1}</td>
+      <td>${statusBadge}</td>
+      ${cells}
+      <td><button class="btn btn-red" style="padding:0.25rem 0.5rem;font-size:0.7rem;" onclick="quickDelete(${row._id})">🗑</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  updateStats();
+}
+
+// ─── Sorting ─────────────────────────────────────────────────────────────────
+function sortBy(col) {
+  if(sortCol === col) sortDir *= -1;
+  else { sortCol = col; sortDir = 1; }
+  // Update header classes
+  document.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc','sort-desc'));
+  const th = document.getElementById('th-'+col);
+  if(th) th.classList.add(sortDir===1?'sort-asc':'sort-desc');
+  renderTable();
+}
+
+// ─── Filters ─────────────────────────────────────────────────────────────────
+function applyFilters() { renderTable(); }
+
+// ─── Checkbox logic ───────────────────────────────────────────────────────────
+function toggleRow(id, cb) {
+  if(cb.checked) checkedIds.add(id);
+  else checkedIds.delete(id);
+  const tr = cb.closest('tr');
+  if(tr) tr.classList.toggle('checked', cb.checked);
+  // Update status badge
+  const badge = tr.querySelector('.status-badge');
+  if(badge) badge.outerHTML = cb.checked
+    ? `<span class="status-badge status-checked">✓ zaznaczone</span>`
+    : `<span class="status-badge status-new">nowy</span>`;
+  updateStats();
+}
+
+function toggleAll(masterCb) {
+  const visible = getVisibleRows();
+  visible.forEach(r => {
+    if(masterCb.checked) checkedIds.add(r._id);
+    else checkedIds.delete(r._id);
+  });
+  renderTable();
+}
+
+function selectAll() {
+  getVisibleRows().forEach(r => checkedIds.add(r._id));
+  renderTable();
+}
+
+function deselectAll() {
+  checkedIds.clear();
+  renderTable();
+}
+
+// ─── Delete logic ─────────────────────────────────────────────────────────────
+function quickDelete(id) {
+  deletedIds.add(id);
+  checkedIds.delete(id);
+  renderTable();
+}
+
+function confirmDelete(type) {
+  pendingDelete = type;
+  const sel = checkedIds.size;
+  const vis = getVisibleRows().length;
+  const unsel = vis - sel;
+
+  document.getElementById('del-title').textContent = 'Potwierdź usunięcie';
+  if(type === 'selected') {
+    document.getElementById('del-sub').textContent = `Czy na pewno chcesz usunąć ${sel} zaznaczonych wierszy? Tej operacji nie można cofnąć.`;
+  } else {
+    document.getElementById('del-sub').textContent = `Czy na pewno chcesz usunąć ${unsel} niezaznaczonych wierszy? Zostanie ${sel} zaznaczonych.`;
+  }
+  document.getElementById('del-confirm').classList.add('show');
+}
+
+function closeConfirm() {
+  document.getElementById('del-confirm').classList.remove('show');
+  pendingDelete = null;
+}
+
+function executeDelete() {
+  if(pendingDelete === 'selected') {
+    checkedIds.forEach(id => deletedIds.add(id));
+    checkedIds.clear();
+  } else if(pendingDelete === 'unchecked') {
+    getVisibleRows().forEach(r => {
+      if(!checkedIds.has(r._id)) deletedIds.add(r._id);
+    });
+  }
+  closeConfirm();
+  renderTable();
+}
+
+// ─── Stats ────────────────────────────────────────────────────────────────────
+function updateStats() {
+  const total = allRows.length;
+  const deleted = deletedIds.size;
+  const visible = getVisibleRows().length;
+  const checked = [...checkedIds].filter(id => !deletedIds.has(id)).length;
+
+  document.getElementById('st-total').textContent = total;
+  document.getElementById('st-visible').textContent = visible;
+  document.getElementById('st-checked').textContent = checked;
+  document.getElementById('st-deleted').textContent = deleted;
+  document.getElementById('sel-info').innerHTML = `<strong>${checked}</strong> zaznaczonych · ${visible} widocznych · ${total - deleted} aktywnych`;
+
+  const hasData = total > 0;
+  document.getElementById('btn-del-sel').disabled = checked === 0;
+  document.getElementById('btn-del-unchecked').disabled = !hasData || checked === 0;
+  document.getElementById('btn-export-checked').disabled = checked === 0;
+  document.getElementById('btn-export-all').disabled = !hasData;
+}
+
+// ─── Export ───────────────────────────────────────────────────────────────────
+function exportAll() {
+  const rows = allRows.filter(r => !deletedIds.has(r._id));
+  downloadCSV(rows, 'leady_wszystkie.csv');
+}
+
+function exportChecked() {
+  const rows = allRows.filter(r => checkedIds.has(r._id) && !deletedIds.has(r._id));
+  downloadCSV(rows, 'leady_zaznaczone.csv');
+}
+
+function downloadCSV(rows, filename) {
+  if(!rows.length) return;
+  const visibleCols = columns.filter(c => DISPLAY_COLS.includes(c));
+  const header = visibleCols.join(';');
+  const body = rows.map(r => visibleCols.map(c => {
+    const v = (r[c] || '').replace(/"/g, '""');
+    return v.includes(';') ? `"${v}"` : v;
+  }).join(';')).join('\n');
+  const blob = new Blob(['\uFEFF' + header + '\n' + body], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── Utils ────────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Zamknij modal klikając poza nim
+document.getElementById('del-confirm').addEventListener('click', function(e) {
+  if(e.target === this) closeConfirm();
+});
+</script>
+</body>
+</html>
