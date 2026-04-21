@@ -1,3 +1,5 @@
+Plik `index.html` dajesz do folderu `templates`
+
 Skrypt odpalasz komenda `python app.py`
 
 Otwierasz tą strone `http://localhost:5000`
