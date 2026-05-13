@@ -45,5 +45,4 @@ Projekt demonstruje praktyczne wykorzystanie inżynierii oprogramowania w codzie
 
 ---
 
-**Autor:** [DolilDev(https://github.com/DolilDev)]
-
+**Autor:** [DolilDev](https://github.com/DolilDev)
