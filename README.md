@@ -12,13 +12,23 @@ Zaawansowane narzędzie do automatyzacji procesów pozyskiwania kontaktów (Lead
 ## 📂 Struktura Projektu
 ```
 Doliil-Maps-Scraper/
-├── templates/              # Szablony HTML dla frameworka Flask
-│   └── index.html          # Główny interfejs skrapera i dashboard live
 ├── app.py                  # Backend: serwer Flask i logika automatyzacji Playwright
+├── templates/              # Szablony HTML dla frameworka Flask
+│   └── index.html          # Szkielet (markup) interfejsu skrapera i dashboardu live
+├── static/                 # Zasoby statyczne (rozdzielony front-end)
+│   ├── css/
+│   │   └── style.css       # Style interfejsu (motyw, layout, tabela wyników)
+│   └── js/
+│       └── app.js          # Logika UI: SSE, polling statusu, render tabeli
 ├── lead_manager.html       # Narzędzie do zarządzania i eksportu pozyskanych baz danych
 └── README.md               # Dokumentacja techniczna projektu
 
 ```
+
+> **Architektura front-endu:** Interfejs został rozdzielony na trzy warstwy —
+> `templates/index.html` (struktura HTML), `static/css/style.css` (wygląd) oraz
+> `static/js/app.js` (logika). Dzięki temu logika aplikacji jest skupiona w
+> backendzie (`app.py`), a poszczególne pliki pozostają zwięzłe i łatwe w utrzymaniu.
 
 ## 🛠️ Stos technologiczny
 

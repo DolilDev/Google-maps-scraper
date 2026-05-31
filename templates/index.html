@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LeadScraper PL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;600;700;800&display=swap"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+
+<header>
+  <div class="logo">Lead<span>Scraper</span></div>
+  <div class="hdiv"></div>
+  <div class="hsub">PL · 40 miast · wszystkie branże</div>
+  <div class="hright">
+    <div class="chip chip-idle" id="chip"><div class="chip-dot"></div><span id="chip-txt">Gotowy</span></div>
+    <button class="btn btn-red" id="btn-stop" onclick="doStop()" style="display:none;">⏹ Stop</button>
+    <a class="btn btn-blue" id="btn-dl" href="/download" style="display:none;">↓ CSV</a>
+    <button class="btn btn-green" id="btn-start" onclick="doStart()">▶ Uruchom skan</button>
+  </div>
+</header>
+
+<div class="main">
+  <div class="top">
+
+    <aside class="sidebar">
+
+      <div>
+        <div class="slabel">Wyniki</div>
+        <div class="stats-grid">
+          <div class="stat"><div class="stat-val g" id="s-bwww">0</div><div class="stat-lbl">Bez www</div></div>
+          <div class="stat"><div class="stat-val" id="s-total">0</div><div class="stat-lbl">Sprawdzono</div></div>
+          <div class="stat"><div class="stat-val b" id="s-mawww">0</div><div class="stat-lbl">Ma www</div></div>
+          <div class="stat"><div class="stat-val p" id="s-pomin">0</div><div class="stat-lbl">Pominięto</div></div>
+          <div class="stat"><div class="stat-val r" id="s-brakd">0</div><div class="stat-lbl">Brak danych</div></div>
+          <div class="stat"><div class="stat-val o" id="s-pct">0%</div><div class="stat-lbl">% bez www</div></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="slabel">Czas</div>
+        <div class="timer">
+          <div class="timer-lbl">Trwa od</div>
+          <div class="timer-val" id="s-time">00:00</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="slabel">Postęp</div>
+        <div class="prog-wrap">
+          <div class="prog-track"><div class="prog-fill" id="prog"></div></div>
+          <div class="prog-meta"><span id="prog-lbl">0 / 40 miast</span><span id="prog-pct">0%</span></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="slabel">Aktualnie</div>
+        <div class="current-city">
+          <div class="current-city-lbl">Skanowane miasto</div>
+          <div class="current-city-val" id="s-city">—</div>
+        </div>
+      </div>
+
+      <div class="hint">Scraper przechodzi przez <strong>40 miast</strong> Polski zbierając firmy bez strony www. Pomija siedziby główne, biura i urzędy. Branża pobierana z profilu Google Maps.</div>
+
+    </aside>
+
+    <div class="log-panel">
+      <div class="panel-bar">
+        <div class="panel-bar-title">Log operacji</div>
+        <div class="log-filters">
+          <button class="lf-btn active" onclick="setFilter('all',this)">Wszystko</button>
+          <button class="lf-btn" onclick="setFilter('found',this)">✅ Znalezione</button>
+          <button class="lf-btn" onclick="setFilter('city',this)">📍 Miasta</button>
+          <button class="lf-btn" onclick="setFilter('skip',this)">🚫 Pominięte</button>
+        </div>
+      </div>
+      <div id="log">
+        <div class="log-empty"><div class="ico">📡</div><div>Kliknij "Uruchom skan" żeby zacząć</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom">
+    <div class="results-bar">
+      <div class="results-bar-title">Firmy bez strony www</div>
+      <div class="cnt-badge" id="res-cnt">0</div>
+      <div class="res-info" id="res-info"></div>
+    </div>
+    <div class="table-wrap">
+      <table id="res-tbl" style="display:none;">
+        <thead><tr>
+          <th>#</th><th>Nazwa firmy</th><th>Branża</th>
+          <th>Adres</th><th>Telefon</th><th>Ocena</th><th>Godziny</th><th>Link</th>
+        </tr></thead>
+        <tbody id="res-body"></tbody>
+      </table>
+      <div class="no-data" id="no-data">Brak wyników — uruchom skan</div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
