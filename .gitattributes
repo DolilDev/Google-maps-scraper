@@ -1,0 +1,5 @@
+# Konfiguracja GitHub Linguist.
+# lead_manager.html to samodzielne narzędzie pomocnicze (pojedynczy plik HTML)
+# i nie należy do głównej bazy kodu aplikacji, dlatego wyłączamy je z
+# wykrywania języka w statystykach repozytorium.
+lead_manager.html linguist-detectable=false
